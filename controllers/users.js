@@ -1,5 +1,7 @@
 // Nos permite tener el tipado
 const { request, response } = require('express');
+const bcryptjs = require('bcryptjs');
+const User = require('../models/user');
 
 const usersGet = (req = request, res = response) => {
   //const query = req.query;
@@ -13,14 +15,28 @@ const usersGet = (req = request, res = response) => {
   })
 }
 
-const usersPost = (req, res = response) => {
+const usersPost = async(req, res = response) => {
   // En el body viene la informacion
-  const { name, age } = req.body;
+  const { name, email, password, role } = req.body;
+  const user = new User({ name, email, password, role });
+
+  // verificar si el correo existe
+  const exitEmail = await User.findOne({ email });
+  if(exitEmail) {
+    return res.status(400).json({
+      msg: 'El correo ya esta en uso'
+    });
+  }
+
+  // Encriptar la contraseña
+  const salt = bcryptjs.genSaltSync();
+  user.password = bcryptjs.hashSync(password, salt);
+
+  await user.save();
 
   res.status(201).json({
     msg: 'post API - controller',
-    name,
-    age
+    user
   })
 }
 
