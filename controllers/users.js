@@ -3,15 +3,14 @@ const { request, response } = require('express');
 const bcryptjs = require('bcryptjs');
 const User = require('../models/user');
 
-const usersGet = (req = request, res = response) => {
-  //const query = req.query;
-  const { q, name = 'No name', apiKey } = req.query;
+const usersGet = async(req = request, res = response) => {
+  const { limit = 5, offset = 0 } = req.query;
+  const users = await User.find()
+    .skip(Number(offset))
+    .limit(Number(limit))
 
   res.json({
-    msg: 'get API - controller',
-    q,
-    name,
-    apiKey
+    users
   })
 }
 
@@ -46,10 +45,7 @@ const usersPut = async(req, res = response) => {
 
   const user = await User.findByIdAndUpdate(id, rest);
 
-  res.status(201).json({
-    msg: 'put API - controller',
-    user
-  })
+  res.status(201).json(user)
 }
 
 const usersPatch = (req,res = response) => {
